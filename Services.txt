@@ -1,0 +1,64 @@
+# Service1: Nodeport
+# myservice.yml:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mynodeportservice
+spec:
+  type: NodePort
+  selector:
+      app: myapp
+  ports:
+   - protocol: TCP
+     port: 80
+     targetPort: 80
+     nodePort: 30001
+
+
+# Instructions to Use:
+
+- Create a myservice.yml file.
+- To create service using that file:
+kubectl apply -f myservice.yml
+- To view list of services:
+kubectl get services
+
+# Service2: Loadbalancer
+# lbservice.yml:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadwalaservice
+spec:
+  type: LoadBalancer
+  selector:
+      app: myapp
+  ports:
+   - protocol: TCP
+     port: 80
+     targetPort: 80
+
+
+
+# Instruction to Use:
+
+- Create a lbservice.yml file.
+- To create service using that file:
+kubectl apply -f loadwalaservice.yml
+- To view list of Services:
+kubectl get services
+
+- Create  AWS load balancer with following SG settings:
+- Load balancer security group:
+Inbound rule:
+port : podport and source : worker node SG
+Outbond rule:
+port: podport and source : worker node SG
+- Worker node security group:
+Inbound rule:
+port: podport and source : load balancer SG
+Outbond rule:
+TCP , ALL , load balancer SG
+Health check port : podport

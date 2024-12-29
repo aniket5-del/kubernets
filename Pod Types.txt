@@ -1,0 +1,242 @@
+#Kind: pod
+# nginxpod.yml:
+
+apiVersion: v1
+kind: Pod
+metadata: 
+ name: nginxpod
+ lables: 
+  app: myapp
+spec:
+ containers: 
+    - name: nginxcontainer
+      image: nginx
+      ports:
+       - containerPort: 80
+
+
+
+# Instructions to Use:
+
+- Create a nginxpod.yml file.
+- To create pod using that file:
+kubectl apply -f nginxpod.yml    
+- To view list of Pods:
+kubectl get pods 
+
+#kind: ReplicationController
+#  rc.yml:
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+   name: myrc
+spec:
+  replicas: 3
+  selector:
+      env: dev
+  template:
+       metadata:
+          labels:
+              env: dev
+       spec:
+            containers:
+                 - name: nginxcontaine
+                   image: nginx
+                   ports:
+                     - containerPort: 80
+
+
+
+# Instructions to Use:
+
+- Create a file rc.yml.
+- To create pod using that file:
+kubectl apply -f rc.yml
+- To view list of pods:
+kubectl get pods
+- To view list of Replication  Controllers
+kubectl get rc
+- To scale:
+kubectl scale rc myrc --replicas=6 
+
+#Kind: ReplicaSet
+# rs1.yml:
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+   name: myrc
+spec:
+  replicas: 3
+  selector:
+   matchLabels:
+      env: dev
+  template:
+       metadata:
+          labels:
+              env: dev
+       spec:
+            containers:
+                 - name: nginxcontaine
+                   image: nginx
+                   ports:
+                     - containerPort: 80
+
+
+# Instructions to Use:
+
+- Create 3 files
+1) rs1.yml : name: myrc and lable env=dev
+2) rs2.yml : name: myrc1 and lable env=prod
+3) rs3.yml : name: myrc2 and lable env=testing
+- Create pods using above files:
+kubectl apply -f rs1.yml
+kubectl apply -f rs2.yml
+kubectl apply -f rs3.yml
+- To view list of pods:
+kubectl get pods
+- To view two pods with different lables:
+kubectl get pods --selector 'env in (dev,testing)'
+
+#Kind: Deployment
+# mydeployment.yml:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: mydeployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      env: dev
+  template:
+       metadata:
+          labels:
+              env: dev
+       spec:
+            containers:
+                 - name: nginxcontaine
+                   image: nginx
+                   ports:
+                     - containerPort: 80
+
+
+
+# Instructions to Use:
+
+- Create a file mydeployment.yml.
+- To create pod using that file:
+kubectl apply -f mydeployment.yml
+- To view list of pods:
+kubectl get pods
+- To view list of deployments:
+kubectl get deployment
+- Update Image in container:
+kubectl set image deployment mydeployment  nginxcontaine=httpd 
+- To view rollout status:
+kubectl rollout status deployment mydeployment
+- To view yaml file created by kubernetes:
+kubectl get deployment mydeployment -o yaml
+- To undo rollout status:
+kubectl rollout undo deployment mydeployment
+- To view rollout history:
+kubectl rollout history deployment mydeployment 
+- To go to specific revision:
+kubectl rollout undo deploy mydeployment --to-revision=3
+- To add name to change-cause:
+kubectl annotate deployments.apps mydeployment kubernetes.io/change-cause="nayahai"    
+
+
+# To use RollingUpdate with Deployment Kind in Kubernetes:
+ - yml file:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: mydeployment
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+         maxSurge: 2
+         maxUnavailable: 0
+  selector:
+    matchLabels:
+      env: dev
+  template:
+       metadata:
+          labels:
+              env: dev
+       spec:
+            containers:
+                 - name: nginxcontaine
+                   image: nginx
+                   ports:
+                     - containerPort: 80
+
+#Kind: Daemonset
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+    name: daemonwala
+    labels:
+       app: promi
+spec:
+   selector:
+       matchLabels:
+        app: promi
+   template:
+     metadata:
+         labels:
+            app: promi
+     spec:
+       containers:
+         - name: daemonwala
+           image: influxdb
+           ports:
+             - containerPort: 80
+
+- To view list of daemonset:
+kubectl get ds
+
+#kind: StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+   name: db
+spec:
+   replicas: 3
+   selector:
+       matchLabels:
+            app: mydb
+   serviceName: "dbservice"
+   template:
+     metadata:
+         labels:
+            app: mydb
+     spec:
+        containers:
+          - name: mydbcontainer
+            image: mysql
+            env:
+              - name: MYSQL_ROOT_PASSWORD
+                valueFrom:
+                   configMapKeyRef:
+                       name: mysql-config
+                       key: mysql-password
+            ports:
+              - containerPort: 3306
+   volumeClaimTemplates:
+         - metadata:
+             name: dbb
+           spec:
+             accessModes: ["ReadWriteMany"]
+             resources:
+                requests:
+                   storage: 1Gi
+                limits:
+                  storage: 1Gi
+
